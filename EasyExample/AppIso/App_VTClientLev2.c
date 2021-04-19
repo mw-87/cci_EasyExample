@@ -92,22 +92,30 @@ void VTC_setPoolManipulation(iso_u8 u8Instance)
 }
 
 
+
+
+
 iso_u32 Tageszaehler = 0;
 iso_u32 Gesamtzaehler = 0;
-
+iso_u32 Tagesziel = 0; // Variable im Arbeitsspeicher RAM
+iso_u32 Gesamtziel = 0;
 
 void VTC_handleSoftkeysAndButtons_RELEASED(const struct ButtonActivation_S *pButtonData) {
 
 	// what button was released
 	switch (pButtonData->objectIdOfButtonObject) {
 
-
-
 	case SoftKey_PlusPlus:
 	// Button mit Namen  Button_PlusPlus mit ID 6000 wurde losgelassen.
 	case Button_PlusPlus:
 		Tageszaehler++;
 		Gesamtzaehler++;
+		break;
+
+	case SoftKey_Minus:
+	case Button_Minus:
+		Tageszaehler--;
+		Gesamtzaehler--;
 		break;
 
 	case SoftKey_Reset_Gesamtzaehler:
@@ -138,13 +146,25 @@ void VTC_handleNumericValues(const struct InputNumber_S * pInputNumberData) {
 	// what number was entered
 	switch (pInputNumberData->objectIdOfInputNumber) {
 
-
 	case NumberVariable_Gesamtzaehler:
 		// Variable mit dem Namen NumberVariable_Gesamtzaehler wurde vom Benutzer am UT Verändert
 		ESP_LOGI(TAG, "you typed Gesamtzaehler: %i", pInputNumberData->newValue); //der eingegebene Wert findet sich in pInputNumberData->newValue
 		Gesamtzaehler = pInputNumberData->newValue;
 		break;
 
+	case NumberVariable_Tagesziel:
+		ESP_LOGI(TAG, "Tagesziel: %i", pInputNumberData->newValue); //Log (Logging = Protokollierung) Ausgabe ins Terminal von Eclipse
+		Tagesziel = pInputNumberData->newValue; // Variable wird vom Isobus in den Arbeitsspeicher kopiert
+		setU32("CF-A", "Tagesziel", Tagesziel); // Variable wird vom Arbeitsspeicher in den Spannungsausfallsicheren Speicher kopiert
+
+		break;
+
+	case NumberVariable_Gesamtziel:
+		ESP_LOGI(TAG, "Gesamtziel: %i", pInputNumberData->newValue); //Log (Logging = Protokollierung) Ausgabe ins Terminal von Eclipse
+		Gesamtziel = pInputNumberData->newValue; // Variable wird vom Isobus in den Arbeitsspeicher kopiert
+		setU32("CF-A", "Gesamtziel", Gesamtziel); // Variable wird vom Arbeitsspeicher in den Spannungsausfallsicheren Speicher kopiert
+
+			break;
 
 	default:
 		break;
@@ -173,12 +193,16 @@ void VTC_setPoolReady(iso_u8 u8Instance)
 	// Laden aus dem Spannungsausfallsicheren Speicher ins RAM
 	// STANDARD-Wert = 0; wenn nichts abgespeichert.
 	Gesamtzaehler = getU32("CF-A", "Gesamtzaehler", 0);
+	Tagesziel = getU32("CF-A", "Tagesziel", 0); // Vom Spannungsausfallsicheren Speicher in den Arbeitspeicher kopieren
+	Gesamtziel = getU32("CF-A", "Gesamtziel", 0);
 
 
 	// Senden des Wertes der lokalen Variable Tageszaehler an die NumberVariable_Tageszaehler
 	IsoVtcCmd_NumericValue(u8Instance, NumberVariable_Tageszaehler, Tageszaehler);
 	// Senden des Wertes der lokalen Variable Gesamtzaehler an die NumberVariable_Gesamtzaehler
 	IsoVtcCmd_NumericValue(u8Instance, NumberVariable_Gesamtzaehler, Gesamtzaehler);
+	IsoVtcCmd_NumericValue(u8Instance, NumberVariable_Tagesziel, Tagesziel); // Vom Arbeitsspeicher auf das UT kopieren
+	IsoVtcCmd_NumericValue(u8Instance, NumberVariable_Gesamtziel, Gesamtziel);
 }
 
 
