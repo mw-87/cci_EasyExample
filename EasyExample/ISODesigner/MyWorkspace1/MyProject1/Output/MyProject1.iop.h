@@ -29,6 +29,8 @@
 #define OutputString_Reset_Tageszaehler   11005
 #define OutputString_11006                11006
 #define OutputString_11007                11007
+#define OutputString_Tagesziel_erreicht   11008
+#define OutputString_Gesamtziel_erreicht  11009
 #define OutputNumber_Tageszaehler         12000
 #define OutputNumber_Gesamtzaehler        12003
 #define Meter_Gesamtzaehler               17000
@@ -43,4 +45,6 @@
 #define FontAttributes_Button             23002
 #define ObjectPointer_27000               27000
 #define ObjectPointer_Null3               27001
+#define ObjectPointer_Gesamtziel_erreicht  27002
+#define ObjectPointer_Tagesziel_erreicht  27003
 #define AuxFunction2_PlusPlus             29000
